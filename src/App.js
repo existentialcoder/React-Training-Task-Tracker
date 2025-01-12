@@ -1,3 +1,7 @@
+/**
+ * @module App - Main App Component module
+ */
+
 import { Paper, Box, Typography, Grid, Button, Select, InputLabel, FormControl, MenuItem, Skeleton } from '@mui/material';
 
 import { useEffect, useState } from 'react';
@@ -12,9 +16,11 @@ import TaskForm from './components/TaskForm';
 
 import { ToastProvider } from './components/ToastProvider';
 
+import constants from './helpers/constants';
+
 /**
- * Simple task tracker app.
- * (For training purposes)
+ * 
+ * @returns {JSX.Element} The rendered component. 
  */
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -29,21 +35,12 @@ function App() {
 
   const [isTaskListLoading, setIsTaskListLoading] = useState(false);
 
-  const filterItems = [
-    {
-      label: 'All',
-      value: 'all'
-    },
-    // {
-    //   label: 'By created time',
-    //   value: 'by_created_time'
-    // },
-    {
-      label: 'By incomplete tasks',
-      value: 'by_incomplete_tasks'
-    }
-  ];
-
+  /**
+   * Takes the original array of tasks, applies the selected sort filter and returns the modified array of same length
+   * 
+   * @param {Array} tasks - List of tasks
+   * @returns Array - Sorts by filter and returns modified array
+   */
   function getTasksAfterFiler(tasks) {
     let filteredTasks = [];
   
@@ -62,6 +59,9 @@ function App() {
     return filteredTasks;
   }
 
+  /**
+   * Fetches tasks from api and sets in the state
+   */
   async function getTasksFromApi() {
     const tasks = await Dataservice.getTasksFromApi();
 
@@ -102,7 +102,7 @@ function App() {
                       onChange={(ev) => setSelectedFilter(ev.target.value)}
                     >
                       {
-                        filterItems.map(filterItem => (
+                        constants.filterItems.map(filterItem => (
                           <MenuItem key={filterItem.label} value={filterItem.value}>{filterItem.label}</MenuItem>
                         ))
                       }
@@ -115,7 +115,7 @@ function App() {
                 </Grid>
               </Grid>
             </Box>
-            {isTaskListLoading ? Array(10).fill('.').map(() => <Skeleton height={50} />) : <TaskList
+            {isTaskListLoading ? Array(10).fill('.').map((val, indx) => <Skeleton key={indx} height={50} />) : <TaskList
               tasks={tasksToList}
               updateTasksListFromApi={getTasksFromApi}
               setShowTaskForm={setShowTaskForm}

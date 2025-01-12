@@ -1,3 +1,7 @@
+/**
+ * @module TaskForm - TaskForm component module
+ */
+
 import { useState } from 'react';
 
 import { Box, Button, FormControlLabel, FormGroup, Modal, Switch, TextField, Typography } from '@mui/material';
@@ -5,6 +9,8 @@ import { Box, Button, FormControlLabel, FormGroup, Modal, Switch, TextField, Typ
 import Dataservice from '../api/Dataservice';
 
 import { useToast } from './ToastProvider';
+
+import constants from '../helpers/constants';
 
 const modalStyle = {
     position: 'absolute',
@@ -18,32 +24,28 @@ const modalStyle = {
     p: 4
 };
 
-const taskFields = [
-    {
-        name: 'title',
-        label: 'Title',
-        type: 'text',
-        multi: false
-    },
-    {
-        name: 'description',
-        label: 'Description',
-        type: 'text',
-        multi: true
-    },
-    {
-        name: 'completed',
-        label: 'Mark as completed',
-        type: 'radio',
-        multi: false
-    }
-];
-
+/**
+ * React component for TaskForm to show existing task in detail or to create a new task
+ *
+ * @param {Object} props - The props object.
+ * @param {string} props.currentTaskId - Current task id selected
+ * @param {string} props.tasks - List of tasks from API
+ * @param {Function} props.updateTasksListFromApi - Method handler to update tasks list
+ * @param {Function} props.setCurrentTaskId - Method set handler to set the task id as current
+ * @param {Function} props.setShowTaskForm - Method to change the show form flag.
+ * @returns {JSX.Element} The rendered component. 
+ */
 const TaskForm = ({ currentTaskId, tasks, updateTasksListFromApi, setCurrentTaskId, setShowTaskForm }) => {
     const [currentTask, setCurrentTask] = useState(tasks.find(task => task.id === currentTaskId) || {});
 
     const showToast = useToast();
 
+    /**
+     * Takes key value pair as inputs and sets it in the current task state
+     * 
+     * @param {string} key - key
+     * @param {any} value  - value of the corresponding key
+     */
     const handleFormChange = (key, value) => {
         setCurrentTask({
             ...currentTask,
@@ -51,6 +53,11 @@ const TaskForm = ({ currentTaskId, tasks, updateTasksListFromApi, setCurrentTask
         });
     };
 
+    /**
+     * Builds the requesy body to save the task change
+     * Creates new task if no task id is found, else updates the existing one
+     * Updates the state once the API call is successful
+     */
     const saveTaskChange = async () => {
         const reqBodyTask = {
             title: currentTask.title,
@@ -79,7 +86,7 @@ const TaskForm = ({ currentTaskId, tasks, updateTasksListFromApi, setCurrentTask
                 </Typography>
                 <FormGroup>
                     {
-                        taskFields.map(taskField => (
+                        constants.taskFields.map(taskField => (
                             <FormControlLabel key={taskField.name} label={taskField.type === 'radio' ? taskField.label : ''} control={taskField.type === 'text' ? <TextField
                                 slotProps={{ inputLabel: { shrink: true } }}
                                 style={{ paddingBottom: '15px' }}

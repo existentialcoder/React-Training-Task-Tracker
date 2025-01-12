@@ -1,9 +1,18 @@
+/**
+ * @module Dataservice - Fetch API Wrapper module
+ */
+
 const baseUrl = process.env.NODE_ENV === 'development' ? `${process.env.REACT_APP_BASE_URL}/api` : '/api';
 
 const headers = {
     'Content-Type': 'application/json'
 };
 
+/**
+ * Fetches the list of tasks from API and returns
+ * 
+ * @returns array - List of tasks from API
+ */
 async function getTasksFromApi() {
     const result = await fetch(`${baseUrl}/tasks/`, {
         method: 'GET',
@@ -15,6 +24,12 @@ async function getTasksFromApi() {
     return tasks;
 }
 
+/**
+ * Creates task from requesy body through API
+ * 
+ * @param {object} taskToCreate - Task to create payload
+ * @returns {object} - Response object
+ */
 async function createNewTask(taskToCreate) {
     const result = await fetch(`${baseUrl}/tasks/`, {
         method: 'POST',
@@ -25,6 +40,13 @@ async function createNewTask(taskToCreate) {
     return result;
 }
 
+/**
+ * Updates task from requesy body through API
+ * 
+ * @param {number} taskId - Task identifier
+ * @param {object} taskToUpdate -Task to update payload
+ * @returns {object} - Response object
+ */
 async function updateExistingTask(taskId, taskToUpdate) {
     const result = await fetch(`${baseUrl}/tasks/${taskId}/`, {
         method: 'PUT',
@@ -35,6 +57,14 @@ async function updateExistingTask(taskId, taskToUpdate) {
     return result;
 }
 
+
+/**
+ * Deletes task from requesy body through API
+ * 
+ * @param {number} taskId - Task identifier
+ * @param {object} taskToUpdate -Task to update payload
+ * @returns {object} - Response object
+ */
 async function deleteTaskFromApi(taskId) {
     const result = await fetch(`${baseUrl}/tasks/${taskId}/`, {
         method: 'DELETE',

@@ -1,0 +1,13 @@
+{
+    "opts": {
+        "template": "node_modules/jsdoc/templates/default",
+        "destination": "./docs",
+        "recurse": true
+    },
+    "source": {
+        "include": [
+            "src"
+        ],
+        "includePattern": "\\.(jsx|js)$"
+    }
+}

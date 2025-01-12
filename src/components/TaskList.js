@@ -1,3 +1,7 @@
+/**
+ * @module TaskList - TaskList component
+ */
+
 import React from 'react';
 
 import { Box, Chip, Grid, Tooltip, Typography } from '@mui/material';
@@ -10,9 +14,25 @@ import Dataservice from '../api/Dataservice';
 
 import { useToast } from './ToastProvider';
 
+/**
+ * React component for TaskList to show the list of tasks
+ *
+ * @param {Object} props - The props object.
+ * @param {string} props.tasks - List of tasks from API
+ * @param {Function} props.updateTasksListFromApi - Method handler to update tasks list
+ * @param {Function} props.setCurrentTaskId - Method set handler to set the task id as current
+ * @param {Function} props.setShowTaskForm - Method to change the show form flag.
+ * @returns {JSX.Element} The rendered component. 
+ */
 const TaskList = ({ tasks, updateTasksListFromApi, setShowTaskForm, setCurrentTaskId }) => {
     const showToast = useToast();
 
+    /**
+     * Takes UTC time stamp and builds the time string in desired format
+     * 
+     * @param {string} taskCreatedAtUtc - UTC Timestamp
+     * @returns  {string} - Date string
+     */
     const getCreatedAtText = (taskCreatedAtUtc) => {
         const date = new Date(taskCreatedAtUtc);
 
@@ -20,7 +40,7 @@ const TaskList = ({ tasks, updateTasksListFromApi, setShowTaskForm, setCurrentTa
             'Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July',
             'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
         ];
-        const suffixes = ["th", "st", "nd", "rd"];
+        const suffixes = ['th', 'st', 'nd', 'rd'];
 
         const day = date.getDate();
         const month = months[date.getMonth()];
@@ -38,6 +58,11 @@ const TaskList = ({ tasks, updateTasksListFromApi, setShowTaskForm, setCurrentTa
         return `${day}${daySuffix} ${month} ${year} ${formattedHours}:${formattedMinutes}`;
     };
 
+    /**
+     * Takes taskId as input and updates the completed flag
+     * 
+     * @param {number} taskId - Task id of the task
+     */
     const handleTaskCompleteOrReopen = async (taskId) => {
         const taskToUpdate = tasks.find(task => task.id === taskId);
 
@@ -51,6 +76,11 @@ const TaskList = ({ tasks, updateTasksListFromApi, setShowTaskForm, setCurrentTa
         updateTasksListFromApi();
     };
 
+    /**
+     * Takes taskId as input and deletes the task from API
+     * 
+     * @param {number} taskId - Task id of the task
+     */
     const handleTaskDelete = async (taskId) => {
         const taskToDelete = tasks.find(task => task.id === taskId);
 
@@ -61,6 +91,11 @@ const TaskList = ({ tasks, updateTasksListFromApi, setShowTaskForm, setCurrentTa
         updateTasksListFromApi();
     };
 
+    /**
+     * Takes taskId as input, sets it as current task id and opens the form
+     * 
+     * @param {number} taskId - Task identifier 
+     */
     const handleTaskOpen = (taskId) => {
         setCurrentTaskId(taskId);
         setShowTaskForm(true);
