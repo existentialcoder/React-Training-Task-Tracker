@@ -1,75 +1,134 @@
-import { Paper, Box, Typography, Button, Grid, Divider } from '@mui/material';
-import { useState } from 'react';
+import { Paper, Box, Typography, Grid, Button, Select, InputLabel, FormControl, MenuItem, Skeleton } from '@mui/material';
+
+import { useEffect, useState } from 'react';
+
+import Dataservice from './api/Dataservice'
+
+import TaskList from './components/TaskList';
+
+import { Add } from '@mui/icons-material';
+
+import TaskForm from './components/TaskForm';
+
+import { ToastProvider } from './components/ToastProvider';
 
 /**
  * Simple task tracker app.
  * (For training purposes)
  */
 function App() {
-  const [tasks, setTasks] = useState([
-    { id: 1, text: 'Task 1', completed: false },
-    { id: 2, text: 'Task 2', completed: true },
-    { id: 3, text: 'Task 3', completed: false }
-  ]);
+  const [tasks, setTasks] = useState([]);
 
-  /**
-   * Handels the click on a task and toggles the complete property of the task object.
-   *
-   * @param {number} taskId
-   */
-  const handleTaskClick = (taskId) => {
-    // Iterate all tasks and find passed task by id
-    const updatedTasks = tasks.map(task => {
-      if (task.id === taskId) {
-        // Toggle completed property
-        return { ...task, completed: !task.completed };
-      }
-      return task;
-    });
-    setTasks(updatedTasks);
-  };
+  const [tasksToList, setTasksToList] = useState([]);
 
-  /**
-   * Handles the click on the delete button and removes it from the tasks list.
-   *
-   * @param {number} taskId
-   */
-  const handleTaskDelete = (taskId) => {
-    // Filter all tasks excpet task with passed id
-    const updatedTasks = tasks.filter(task => task.id !== taskId);
-    setTasks(updatedTasks);
-  };
+  const [showTaskForm, setShowTaskForm] = useState(false);
+
+  const [currentTaskId, setCurrentTaskId] = useState(null);
+
+  const [selectedFilter, setSelectedFilter] = useState('all');
+
+  const [isTaskListLoading, setIsTaskListLoading] = useState(false);
+
+  const filterItems = [
+    {
+      label: 'All',
+      value: 'all'
+    },
+    // {
+    //   label: 'By created time',
+    //   value: 'by_created_time'
+    // },
+    {
+      label: 'By incomplete tasks',
+      value: 'by_incomplete_tasks'
+    }
+  ];
+
+  function getTasksAfterFiler(tasks) {
+    let filteredTasks = [];
+  
+    switch (selectedFilter) {
+      case 'all':
+        filteredTasks = [...tasks];
+        break;
+      case 'by_created_time':
+        filteredTasks = [...tasks].sort((task1, task2) => task1.created_at - task2.created_at);
+        break;
+      case 'by_incomplete_tasks':
+        filteredTasks = [...tasks].sort((a, b) => a.completed - b.completed);
+        break;
+    }
+
+    return filteredTasks;
+  }
+
+  async function getTasksFromApi() {
+    const tasks = await Dataservice.getTasksFromApi();
+
+    setTasks(tasks);
+    setTasksToList(selectedFilter === 'all' ? tasks : getTasksAfterFiler(tasks));
+    setIsTaskListLoading(false);
+  }
+
+  useEffect(() => {
+    // Fetch tasks from API
+    getTasksFromApi();
+  }, []);
+
+  useEffect(() => {
+    setIsTaskListLoading(true);
+
+    setTasksToList(getTasksAfterFiler(tasks));
+    setTimeout(() => setIsTaskListLoading(false), 500);
+  }, [selectedFilter]);
 
   return (
-    <Box mx={5} my={5}>
-      <Paper mx={5}>
-        <Box mx={5}>
-          <Box pt={3} pb={5}>
-            <Typography variant='h4'>Task Tracker</Typography>
-          </Box>
-          {tasks.map(task => (
-            <>
-              <Grid key={task.id} container justifyContent={"space-between"}>
+    <ToastProvider>
+      <Box mx={5} my={5}>
+        <Paper mx={5}>
+          <Box mx={5}>
+            <Box pt={3} pb={3}>
+              <Grid container justifyContent='space-between '>
                 <Grid item>
-                  <Typography
-                    style={{ textDecoration: task.completed ? 'line-through' : 'none' }}
-                    onClick={() => handleTaskClick(task.id)}
-                  >
-                    {task.text}
-                  </Typography>
+                  <Typography variant='h4'>Task Tracker </Typography>
                 </Grid>
                 <Grid item>
-                  <Button variant='contained' onClick={() => handleTaskDelete(task.id)}>Delete</Button>
+                  <FormControl style={{ marginRight: '10px' }}>
+                    <InputLabel>Sort</InputLabel>
+                    <Select
+                      style={{ height: '38px', width: '200px', textAlign: 'center' }}
+                      value={selectedFilter}
+                      label='Sort'
+                      onChange={(ev) => setSelectedFilter(ev.target.value)}
+                    >
+                      {
+                        filterItems.map(filterItem => (
+                          <MenuItem key={filterItem.label} value={filterItem.value}>{filterItem.label}</MenuItem>
+                        ))
+                      }
+                    </Select>
+                  </FormControl>
+                  <Button
+                    variant='contained'
+                    startIcon={<Add />}
+                    onClick={() => setShowTaskForm(true)} color='primary'>Add Task</Button>
                 </Grid>
               </Grid>
-              <Box my={2}>
-                <Divider />
-              </Box>
-            </>
-          ))}
-        </Box>
-      </Paper>
-    </Box>
+            </Box>
+            {isTaskListLoading ? Array(10).fill('.').map(() => <Skeleton height={50} />) : <TaskList
+              tasks={tasksToList}
+              updateTasksListFromApi={getTasksFromApi}
+              setShowTaskForm={setShowTaskForm}
+              setCurrentTaskId={setCurrentTaskId} />}
+            {showTaskForm && <TaskForm currentTaskId={currentTaskId}
+              tasks={tasks}
+              updateTasksListFromApi={getTasksFromApi}
+              setCurrentTaskId={setCurrentTaskId}
+              setShowTaskForm={setShowTaskForm} />}
+          </Box>
+        </Paper>
+      </Box>
+    </ToastProvider>
   );
 }
 
